@@ -1,0 +1,40 @@
+title: Deepak Lohani
+tagline: Notes on software, agents, and the things I'm building
+description: >-
+  Field notes from side projects and experiments. Mostly software,
+  agents, and infrastructure. Honest about what worked and what didn't.
+
+theme: minima
+minima:
+  skin: classic
+  date_format: "%Y-%m-%d"
+
+# Permalink shape for posts: /YYYY/MM/DD/slug/
+permalink: /:year/:month/:day/:title/
+
+# Plugins (GitHub Pages whitelisted)
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Default frontmatter so posts don't have to repeat layout: post
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: post
+
+# Markdown processor
+markdown: kramdown
+kramdown:
+  input: GFM
+
+# Files Jekyll should not serve
+exclude:
+  - README.md
+  - .gitignore
+  - vendor
+  - Gemfile
+  - Gemfile.lock
