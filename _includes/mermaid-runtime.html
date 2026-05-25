@@ -1,0 +1,76 @@
+{%- comment -%}
+doc-compiler runtime: loads mermaid@11 from the iconify-friendly CDN,
+registers the canonical mdi + logos icon packs (matching the
+`mermaidchart.vscode-mermaid-chart` extension's local registrations so
+diagrams render identically in VSCode preview AND on deploy), and
+renders any mermaid blocks on the page on DOMContentLoaded. Idempotent:
+safe to include twice.
+{%- endcomment -%}
+<link rel="stylesheet" href="{{ '/assets/css/mermaid-extras.css' | relative_url }}">
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  // Canonical pack set: `mdi` (Material Design Icons) + `logos` (brand
+  // marks). Both packs are also registered locally by the
+  // `mermaidchart.vscode-mermaid-chart` VSCode extension, so any
+  // diagram authored with these prefixes renders identically in
+  // VSCode's local Markdown preview AND on the deployed site.
+  // `fa6-solid` is intentionally NOT registered — the VSCode
+  // extension ships `fa` (FA5) but not `fa6-solid`, so authoring with
+  // `fa6-solid:` would render here but break local preview.
+  mermaid.registerIconPacks([
+    {
+      name: 'mdi',
+      loader: () =>
+        fetch('https://cdn.jsdelivr.net/npm/@iconify-json/mdi@1/icons.json')
+          .then(res => res.json()),
+    },
+    {
+      name: 'logos',
+      loader: () =>
+        fetch('https://cdn.jsdelivr.net/npm/@iconify-json/logos@1/icons.json')
+          .then(res => res.json()),
+    },
+  ]);
+  // The global theme is the pastel grey + blue palette. Per-diagram
+  // `%%{init: ...}%%` blocks in markdown CAN override these, but the
+  // global defaults already paint the diagrams correctly without
+  // requiring the per-diagram block to be honored (some mermaid v11
+  // configs strip the directive depending on securityLevel timing).
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'loose',
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#eef2f6',
+      primaryTextColor: '#1f2328',
+      primaryBorderColor: '#9aa4b1',
+      lineColor: '#6e7781',
+      secondaryColor: '#dde7f1',
+      tertiaryColor: '#f6f8fa',
+      noteBkgColor: '#e3ebf3',
+      noteTextColor: '#1f2328',
+      noteBorderColor: '#9aa4b1',
+      clusterBkg: '#f0f4f8',
+      clusterBorder: '#9aa4b1',
+      edgeLabelBackground: '#f6f8fa',
+      fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif",
+      fontSize: '14px',
+    },
+    flowchart: {
+      curve: 'basis',
+      useMaxWidth: true,
+      nodeSpacing: 60,
+      rankSpacing: 70,
+    },
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('pre > code.language-mermaid').forEach((el) => {
+      const pre = el.parentElement;
+      const div = document.createElement('div');
+      div.className = 'mermaid';
+      div.textContent = el.textContent;
+      pre.replaceWith(div);
+    });
+    mermaid.run({ querySelector: '.mermaid' });
+  });
+</script>

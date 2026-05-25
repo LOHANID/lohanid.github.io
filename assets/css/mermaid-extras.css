@@ -1,0 +1,108 @@
+/* mermaid-stylist: visual touch-ups + animations for embedded mermaid
+ * diagrams. Hover-lift on icon-shape nodes, fade-in for the whole
+ * diagram when it renders, edge-draw animation that makes lines look
+ * like they're being drawn. All animations respect
+ * prefers-reduced-motion.
+ *
+ * Added by the mermaid-stylist plugin's install-jekyll-runtime script.
+ */
+
+.mermaid {
+  margin: 1.5em auto;
+  text-align: center;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Icon-shape node hover lift. Applies to flowchart nodes that mermaid
+ * renders as <g class="node">. The transition is intentionally subtle:
+ * 120ms ease, 2px lift, so it reads as confirmation, not animation. */
+.mermaid g.node {
+  transition: transform 120ms ease, filter 120ms ease;
+  cursor: default;
+}
+
+.mermaid g.node:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+
+/* Slight visual breathing room for icon glyphs above labels. */
+.mermaid g.node foreignObject {
+  overflow: visible;
+}
+
+/* === fade-in: every diagram softly appears when rendered ===
+ * Triggered automatically when mermaid inserts the SVG into the DOM. */
+.mermaid svg {
+  animation: mermaid-fade-in 500ms ease-out both;
+}
+
+@keyframes mermaid-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === edge-draw: edges look like they're being drawn ===
+ * Uses the stroke-dasharray trick. The path is dashed with a 2000-unit
+ * pattern (oversized so no single edge shows a tail), starts at the end
+ * of the dash so the path is invisible, then animates the offset to
+ * zero to reveal the stroke. 250ms delay lets the fade-in start first.
+ * 900ms draw is slow enough to read as "being drawn" but quick enough
+ * not to feel sluggish. */
+.mermaid .edgePath .path,
+.mermaid .flowchart-link {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: mermaid-draw 900ms ease-out 250ms forwards;
+}
+
+@keyframes mermaid-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Edge labels appear after the lines do, so the reader sees the line
+ * arrive and the label settle on top of it. */
+.mermaid .edgeLabel {
+  animation: mermaid-fade-in 400ms ease-out 800ms both;
+  transition: opacity 120ms ease;
+}
+
+/* Arrowheads come in with the line, not after. They share the path's
+ * delay so the arrow tip lands at the same moment the path completes. */
+.mermaid marker path,
+.mermaid .arrowheadPath {
+  animation: mermaid-fade-in 200ms ease-out 1100ms both;
+}
+
+/* Respect prefers-reduced-motion. Users who have asked the OS to
+ * minimize animation get static rendering: no fade, no draw. */
+@media (prefers-reduced-motion: reduce) {
+  .mermaid svg,
+  .mermaid .edgePath .path,
+  .mermaid .flowchart-link,
+  .mermaid .edgeLabel,
+  .mermaid marker path,
+  .mermaid .arrowheadPath {
+    animation: none;
+  }
+  .mermaid .edgePath .path,
+  .mermaid .flowchart-link {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
